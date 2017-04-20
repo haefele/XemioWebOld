@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{03752934-D524-4E23-ACEE-3F8185BF92B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xemio.Api", "src\Xemio.Api\Xemio.Api.csproj", "{F056CD64-41CA-43DB-B2B4-58B3BDBE9371}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xemio.Api.Data", "src\Xemio.Api.Data\Xemio.Api.Data.csproj", "{F8F7EF08-0723-47C0-ACAA-9B583E0D67D6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F056CD64-41CA-43DB-B2B4-58B3BDBE9371}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F056CD64-41CA-43DB-B2B4-58B3BDBE9371}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F056CD64-41CA-43DB-B2B4-58B3BDBE9371}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F056CD64-41CA-43DB-B2B4-58B3BDBE9371}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8F7EF08-0723-47C0-ACAA-9B583E0D67D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8F7EF08-0723-47C0-ACAA-9B583E0D67D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8F7EF08-0723-47C0-ACAA-9B583E0D67D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8F7EF08-0723-47C0-ACAA-9B583E0D67D6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F056CD64-41CA-43DB-B2B4-58B3BDBE9371} = {03752934-D524-4E23-ACEE-3F8185BF92B1}
+		{F8F7EF08-0723-47C0-ACAA-9B583E0D67D6} = {03752934-D524-4E23-ACEE-3F8185BF92B1}
+	EndGlobalSection
+EndGlobal
