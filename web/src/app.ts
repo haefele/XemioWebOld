@@ -3,7 +3,6 @@ import {RouterConfiguration, RouteConfig, Router, ConfiguresRouter} from "aureli
 export class App implements ConfiguresRouter {
 
   public router: Router;
-  public message = 'Hello World!';
 
   public configureRouter(config: RouterConfiguration, router: Router): void | Promise<void> | PromiseLike<void> {
     this.router = router;
