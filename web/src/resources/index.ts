@@ -4,7 +4,6 @@ export function configure(config: FrameworkConfiguration) {
   config.globalResources([
     //Bootstrap
     "bootstrap/css/bootstrap.css",
-    "resources/global.css",
 
     //Attributes
     "resources/attributes/button-command",

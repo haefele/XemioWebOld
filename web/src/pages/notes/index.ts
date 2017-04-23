@@ -27,5 +27,7 @@ export class Index implements RoutableComponentCanDeactivate {
                 resolve();
             }, 2000);
         });
+
+        this.name = "";
     }
 }

@@ -1,5 +1,6 @@
 import {Command} from "../../helper/command";
 import {autoinject, ObserverLocator} from "aurelia-framework";
+import * as $ from "jquery";
 
 @autoinject()
 export class ButtonCommandCustomAttribute {
@@ -48,24 +49,45 @@ export class ButtonCommandCustomAttribute {
     }
     
     private onCommandIsExecutingChanged(newValue: boolean, oldValue: boolean): void {
-        if (newValue === true) {
-            this.element.classList.add("disabled");
+        if (newValue === true) { 
+            this.addLoading();         
         }
         if (newValue === false) {
-            this.element.classList.remove("disabled");
+            this.removeLoading();
         }
     }
     private onCommandCanExecuteChanged(newValue: boolean, oldValue: boolean): void {
         if (newValue === true) {
-            this.element.classList.remove("disabled");
+            this.removeDisabled();
         }
         if (newValue === false) {
-            this.element.classList.add("disabled");
+            this.addDisabled();
         }
     }
     private async onButtonClick(): Promise<void> {
         if (this._command !== null) {
             await this._command.execute();
         }
+    }
+
+    private addLoading(): void {
+        this.element.setAttribute("data-loading-text", "<style>.glyphicon-spin { animation: spin 700ms infinite linear; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(359deg); } }</style><span class='glyphicon glyphicon-refresh glyphicon-spin'></span> Loading");
+        $(this.element).button("loading");
+    }
+    private removeLoading(): void {
+        $(this.element).button("reset");
+        this.element.removeAttribute("data-loading-text");
+
+        //Make sure the button is correctly disabled when we finished executing the command
+        setTimeout(() => {
+            this.onCommandCanExecuteChanged(this._command.canExecute, undefined);
+        }, 0);
+    }
+
+    private addDisabled(): void {
+        this.element.classList.add("disabled");
+    }
+    private removeDisabled(): void {
+        this.element.classList.remove("disabled");
     }
 }
