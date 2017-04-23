@@ -72,7 +72,7 @@ export class ButtonCommandCustomAttribute {
     }
 
     private addLoading(): void {
-        var loadingMessage = this.element.getAttribute("button-command-loading-message");
+        let loadingMessage = this.element.getAttribute("button-command-loading-message");
 
         if (!loadingMessage)
             loadingMessage = "Loading";
