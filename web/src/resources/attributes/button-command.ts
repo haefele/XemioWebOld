@@ -6,6 +6,7 @@ import * as $ from "jquery";
 export class ButtonCommandCustomAttribute {
     private _onCommandIsExecutingChangedBind: (newValue: any, oldValue: any) => void;        
     private _onCommandCanExecuteChangedBind: (newValue: any, oldValue: any) => void;
+
     private _command: Command;
                 
     public constructor(private element: Element, private observerLocator: ObserverLocator) {
@@ -71,7 +72,12 @@ export class ButtonCommandCustomAttribute {
     }
 
     private addLoading(): void {
-        this.element.setAttribute("data-loading-text", "<style>.glyphicon-spin { animation: spin 700ms infinite linear; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(359deg); } }</style><span class='glyphicon glyphicon-refresh glyphicon-spin'></span> Loading");
+        var loadingMessage = this.element.getAttribute("button-command-loading-message");
+
+        if (!loadingMessage)
+            loadingMessage = "Loading";
+
+        this.element.setAttribute("data-loading-text", "<style>.glyphicon-spin { animation: spin 700ms infinite linear; } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(359deg); } }</style><span class='glyphicon glyphicon-refresh glyphicon-spin'></span> " + loadingMessage + "…");
         $(this.element).button("loading");
     }
     private removeLoading(): void {

@@ -1,8 +1,7 @@
 import * as $ from "jquery";
 import {Command} from "../../helper/command";
-import {RoutableComponentCanDeactivate, NavigationCommand} from "aurelia-router";
 
-export class Index implements RoutableComponentCanDeactivate {   
+export class Index {   
 
     public name: string;
 
@@ -12,16 +11,12 @@ export class Index implements RoutableComponentCanDeactivate {
         this.testCommand = new Command(() => this.test(), () => this.canTest());
     }
 
-    public canDeactivate(): boolean | Promise<boolean> | PromiseLike<boolean> | NavigationCommand {
-        return this.testCommand.isExecuting !== true;
-    }
-
     private canTest() : boolean {
         return this.name !== undefined 
             && this.name !== null 
             && this.name !== "";
     }
-    private async test() : Promise<any> {
+    private async test() : Promise<void> {
         await new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve();
