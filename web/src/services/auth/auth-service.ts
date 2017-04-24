@@ -20,7 +20,11 @@ export class AuthService {
     constructor(private readonly storageService: StorageService, private readonly browserService: BrowserService) {
     }
 
-    public login(): void {
+    public startLogin(): void {
+        
+    }
+    public finishLogin(): void {
+
     }
 
     public logout(): void {

@@ -9,8 +9,7 @@ export class AppLoggedIn implements ConfiguresRouter {
 
     config.map([
       { route: ["", "notes"], moduleId: "pages/notes/index", name: "notes", title: "Notes", nav: true },
-      { route: "todo", moduleId: "pages/todo/index", name: "todo", title: "Todo", nav: true },
-      { route: "logout", moduleId: "pages/logout/logout", name: "logout", title: "Logout", nav: false }
+      { route: "todo", moduleId: "pages/todo/index", name: "todo", title: "Todo", nav: true }
     ]);
   }
 }

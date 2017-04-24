@@ -6,20 +6,22 @@ import * as $ from "jquery";
 export class ButtonCommandCustomAttribute {
     private _onCommandIsExecutingChangedBind: (newValue: any, oldValue: any) => void;        
     private _onCommandCanExecuteChangedBind: (newValue: any, oldValue: any) => void;
+    private _onButtonClickBind: () => Promise<void>;
 
     private _command: Command;
                 
     public constructor(private element: Element, private observerLocator: ObserverLocator) {
-      this._onCommandIsExecutingChangedBind = this.onCommandIsExecutingChanged.bind(this);
-      this._onCommandCanExecuteChangedBind = this.onCommandCanExecuteChanged.bind(this);      
+        this._onCommandIsExecutingChangedBind = this.onCommandIsExecutingChanged.bind(this);
+        this._onCommandCanExecuteChangedBind = this.onCommandCanExecuteChanged.bind(this);
+        this._onButtonClickBind = this.onButtonClick.bind(this);
     }
     
     public attached(): void {
-        this.element.addEventListener("click", this.onButtonClick.bind(this));
+        this.element.addEventListener("click", this._onButtonClickBind);
     }
     
     public detached(): void {
-        this.element.removeEventListener("click", this.onButtonClick.bind(this));
+        this.element.removeEventListener("click", this._onButtonClickBind);
     }
     
     public valueChanged(newValue: Command, oldValue: Command): void {
