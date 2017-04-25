@@ -1,6 +1,6 @@
 import {bindable, autoinject} from "aurelia-framework";
 import {Router} from "aurelia-router";
-import {AuthService} from "../../../services/auth/auth-service";
+import {AuthService} from "services/auth/auth-service";
 
 @autoinject()
 export class NavBar {

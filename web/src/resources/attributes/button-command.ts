@@ -1,4 +1,4 @@
-import {Command} from "../../helper/command";
+import {Command} from "helper/command";
 import {autoinject, ObserverLocator} from "aurelia-framework";
 import * as $ from "jquery";
 

@@ -1,5 +1,5 @@
 import * as $ from "jquery";
-import {Command} from "../../helper/command";
+import {Command} from "helper/command";
 
 export class Index {   
 

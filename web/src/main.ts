@@ -1,6 +1,6 @@
 import {Aurelia} from 'aurelia-framework'
-import environment from './environment';
-import {AuthService} from "./services/auth/auth-service";
+import environment from 'environment';
+import {AuthService} from "services/auth/auth-service";
 
 export function configure(aurelia: Aurelia) {
   aurelia.use

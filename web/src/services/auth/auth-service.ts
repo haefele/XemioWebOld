@@ -1,6 +1,6 @@
-import {User} from "./user";
-import {StorageService} from "../storage/storage-service";
-import {BrowserService} from "../browser/browser-service";
+import {User} from "services/auth/user";
+import {StorageService} from "services/storage/storage-service";
+import {BrowserService} from "services/browser/browser-service";
 import {autoinject} from "aurelia-framework";
 
 @autoinject()
@@ -20,11 +20,8 @@ export class AuthService {
     constructor(private readonly storageService: StorageService, private readonly browserService: BrowserService) {
     }
 
-    public startLogin(): void {
+    public async login(): Promise<void> {
         
-    }
-    public finishLogin(): void {
-
     }
 
     public logout(): void {

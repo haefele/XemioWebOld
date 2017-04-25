@@ -1,8 +1,8 @@
-import {BrowserService} from "./services/browser/browser-service";
-import {AuthService} from "./services/auth/auth-service";
-import {User} from "./services/auth/user";
+import {BrowserService} from "services/browser/browser-service";
+import {AuthService} from "services/auth/auth-service";
+import {User} from "services/auth/user";
 import {autoinject} from "aurelia-framework";
-import {Command} from "./helper/command";
+import {Command} from "helper/command";
 import * as A from "aurelia-router";
 
 @autoinject()
@@ -19,6 +19,6 @@ export class AppLoggedOut implements A.RoutableComponentActivate {
     }
 
     private async login(): Promise<void> {
-        await this.authService.startLogin();
+        await this.authService.login();
     }
 }
