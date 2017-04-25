@@ -1,7 +1,19 @@
 <template>
   <button class="btn btn-default" 
-          button-command.bind="loginCommand"
-          button-command-loading-message="Saving folder">
-          login!
+          button-command.bind="microsoftLoginCommand"
+          button-command-loading-message="Logging in">
+          Microsoft
+  </button>
+
+  <button class="btn btn-default" 
+          button-command.bind="facebookLoginCommand"
+          button-command-loading-message="Logging in">
+          Facebook
+  </button>
+  
+  <button class="btn btn-default" 
+          button-command.bind="googleLoginCommand"
+          button-command-loading-message="Logging in">
+          Google
   </button>
 </template>

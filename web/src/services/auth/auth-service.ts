@@ -23,14 +23,31 @@ export class AuthService {
     constructor(private readonly storageService: StorageService, private readonly browserService: BrowserService, private readonly oauthHelper: OAuthHelper, private readonly urlHelper: UrlHelper) {
     }
 
-    public async login(): Promise<void> {
+    public loginWithFacebook(): Promise<void> {
+        return this.login("facebook");
+    }
+
+    public loginWithGoogle(): Promise<void> {
+        return this.login("google-oauth2");
+    }
+
+    public loginWithMicrosoft(): Promise<void> {
+        return this.login("windowslive");
+    }
+
+    public logout(): void {
+        this.currentUser = null;
+        this.browserService.reload();
+    }
+    
+    private async login(connection: string): Promise<void> {
         let state = this.newState();
 
         let query = new URLSearchParams();
         query.set("client_id", environment.auth0.clientId);
         query.set("redirect_uri", environment.auth0.redirectUrl);
         query.set("response_type", "token");
-        query.set("connection", "windowslive");
+        query.set("connection", connection);
         query.set("scope", "openid");
         query.set("state", state);
         query.set("nonce", this.newState());
@@ -50,11 +67,6 @@ export class AuthService {
             idToken: this.urlHelper.getParameter(redirectedUrl, "id_token")
         };
 
-        this.browserService.reload();
-    }
-
-    public logout(): void {
-        this.currentUser = null;
         this.browserService.reload();
     }
 
