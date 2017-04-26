@@ -57,7 +57,13 @@ export class AuthService {
 
     public logout(): void {
         this.currentUser = null;
-        this.browserService.goToUrl(environment.url);
+
+        let query = new URLSearchParams();
+        query.set("client_id", environment.auth0.clientId);
+        query.set("returnTo", environment.url);
+
+        let url = "https://" + environment.auth0.domain + "/v2/logout?" + query;
+        this.browserService.goToUrl(url);
     }
     
     private async login(connection: string): Promise<void> {
