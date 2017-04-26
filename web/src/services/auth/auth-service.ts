@@ -2,9 +2,9 @@ import {User} from "services/auth/user";
 import {StorageService} from "services/storage/storage-service";
 import {BrowserService} from "services/browser/browser-service";
 import {autoinject} from "aurelia-framework";
-import {OAuthHelper} from "helper/oauth-helper";
 import {UrlHelper} from "helper/url-helper";
 import environment from "environment";
+import "url-search-params-polyfill";
 
 @autoinject()
 export class AuthService {
@@ -20,7 +20,7 @@ export class AuthService {
         return this.currentUser != null;
     }
 
-    constructor(private readonly storageService: StorageService, private readonly browserService: BrowserService, private readonly oauthHelper: OAuthHelper, private readonly urlHelper: UrlHelper) {
+    constructor(private readonly storageService: StorageService, private readonly browserService: BrowserService, private readonly urlHelper: UrlHelper) {
     }
 
     public loginWithFacebook(): Promise<void> {
@@ -35,9 +35,29 @@ export class AuthService {
         return this.login("windowslive");
     }
 
+    public tryFinishLogin(): void {
+        let currentUrl = this.browserService.currentUrl();
+
+        let correctState = <string>this.storageService.getItem("StateForAuth");
+        let givenState = this.urlHelper.getParameter(currentUrl, "state");
+
+        if (correctState == null || givenState == null)
+            return;
+        
+        if (correctState !== givenState)
+            throw new Error("Login failed.");
+
+        this.currentUser = {
+            accessToken: this.urlHelper.getParameter(currentUrl, "access_token"),
+            idToken: this.urlHelper.getParameter(currentUrl, "id_token")
+        };
+
+        this.browserService.goToUrl(environment.url);
+    }
+
     public logout(): void {
         this.currentUser = null;
-        this.browserService.reload();
+        this.browserService.goToUrl(environment.url);
     }
     
     private async login(connection: string): Promise<void> {
@@ -52,22 +72,10 @@ export class AuthService {
         query.set("state", state);
         query.set("nonce", this.newState());
 
-        let startUrl = "https://" + environment.auth0.domain + "/authorize?" + query;
-        let endUrl = environment.auth0.redirectUrl;
+        let url = "https://" + environment.auth0.domain + "/authorize?" + query;
 
-        let redirectedUrl = await this.oauthHelper.showOAuthPopup("Login", startUrl, endUrl);
-
-        let givenState = this.urlHelper.getParameter(redirectedUrl, "state");
-
-        if (state !== givenState)
-            throw new Error("Login failed.");
-
-        this.currentUser = {
-            accessToken: this.urlHelper.getParameter(redirectedUrl, "access_token"),
-            idToken: this.urlHelper.getParameter(redirectedUrl, "id_token")
-        };
-
-        this.browserService.reload();
+        this.storageService.setItem("StateForAuth", state);
+        this.browserService.goToUrl(url);
     }
 
     private newState(): string {

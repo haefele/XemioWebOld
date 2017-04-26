@@ -140,7 +140,8 @@
               "css/bootstrap.css",
               "css/bootstrap-theme.css"
             ]
-          }
+          },
+          "url-search-params-polyfill"
         ]
       }
     ],

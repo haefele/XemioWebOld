@@ -1,6 +1,10 @@
 export class BrowserService {
     
-    public reload(): void {
-        window.location.reload();
+    public currentUrl(): string {
+        return window.location.href;
+    }
+
+    public goToUrl(url: string): string {
+        return window.location.href = url;
     }
 }
