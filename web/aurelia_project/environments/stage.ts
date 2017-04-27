@@ -6,5 +6,6 @@ export default {
     domain: null,
     clientId: null,
     redirectUrl: null,
-  }
+  },
+  api: null
 };

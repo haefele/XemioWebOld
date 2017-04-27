@@ -1,28 +1,18 @@
 import * as $ from "jquery";
 import {Command} from "helper/command";
+import {FoldersApi, FolderDTO} from "apis/folders-api";
+import {autoinject} from "aurelia-framework";
+import { RoutableComponentActivate, NavigationInstruction, RouteConfig, IObservable } from "aurelia-router";
 
-export class Index {   
+@autoinject()
+export class Index implements RoutableComponentActivate {
 
-    public name: string;
+    public folders: FolderDTO[];
 
-    public testCommand: Command;
-
-    constructor() {
-        this.testCommand = new Command(() => this.test(), () => this.canTest());
+    constructor(private readonly foldersApi: FoldersApi) {
     }
 
-    private canTest() : boolean {
-        return this.name !== undefined 
-            && this.name !== null 
-            && this.name !== "";
-    }
-    private async test() : Promise<void> {
-        await new Promise((resolve, reject) => {
-            setTimeout(() => {
-                resolve();
-            }, 2000);
-        });
-
-        this.name = "";
+    public async activate(params: any, routeConfig: RouteConfig, navigationInstruction: NavigationInstruction): Promise<void> {
+        this.folders = await this.foldersApi.getRootFolders();
     }
 }

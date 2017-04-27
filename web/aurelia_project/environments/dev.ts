@@ -6,5 +6,6 @@ export default {
     domain: "haefele.eu.auth0.com",
     clientId: "781fuxE7HOhftCictObMQZcuNUS7CeJu",
     redirectUrl: "http://desktop-haefele:9000/"
-  }
+  },
+  api: "http://localhost:5000/"
 };

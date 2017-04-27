@@ -141,7 +141,13 @@
               "css/bootstrap-theme.css"
             ]
           },
-          "url-search-params-polyfill"
+          "url-search-params-polyfill",
+          {
+            "name": "aurelia-fetch-client",
+            "main": "aurelia-fetch-client",
+            "path": "../node_modules/aurelia-fetch-client/dist/amd",
+            "resources": []
+          }
         ]
       }
     ],
