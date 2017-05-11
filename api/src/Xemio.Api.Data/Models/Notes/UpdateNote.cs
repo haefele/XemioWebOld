@@ -7,52 +7,52 @@ namespace Xemio.Api.Data.Models.Notes
     {
         public bool HasTitle()
         {
-            return this.TryGetValue(nameof(NoteDTO.Title), StringComparison.OrdinalIgnoreCase, out var _);
+            return this.TryGetValue(nameof(this.Title), StringComparison.OrdinalIgnoreCase, out var _);
         }
         public string Title
         {
             get
             {
-                this.TryGetValue(nameof(NoteDTO.Title), StringComparison.OrdinalIgnoreCase, out var titleToken);
+                this.TryGetValue(nameof(this.Title), StringComparison.OrdinalIgnoreCase, out var titleToken);
                 return titleToken.ToObject<string>();
             }
             set
             {
-                this[nameof(NoteDTO.Title)] = value;
+                this[nameof(this.Title)] = value;
             }
         }
 
         public bool HasContent()
         {
-            return this.TryGetValue(nameof(NoteDTO.Content), StringComparison.OrdinalIgnoreCase, out var _);
+            return this.TryGetValue(nameof(this.Content), StringComparison.OrdinalIgnoreCase, out var _);
         }
         public string Content
         {
             get
             {
-                this.TryGetValue(nameof(NoteDTO.Content), StringComparison.OrdinalIgnoreCase, out var contentToken);
+                this.TryGetValue(nameof(this.Content), StringComparison.OrdinalIgnoreCase, out var contentToken);
                 return contentToken.ToObject<string>();
             }
             set
             {
-                this[nameof(NoteDTO.Content)] = value;
+                this[nameof(this.Content)] = value;
             }
         }
 
         public bool HasFolderId()
         {
-            return this.TryGetValue(nameof(NoteDTO.FolderId), StringComparison.OrdinalIgnoreCase, out var _);
+            return this.TryGetValue(nameof(this.FolderId), StringComparison.OrdinalIgnoreCase, out var _);
         }
         public long? FolderId
         {
             get
             {
-                this.TryGetValue(nameof(NoteDTO.FolderId), StringComparison.OrdinalIgnoreCase, out var titleToken);
+                this.TryGetValue(nameof(this.FolderId), StringComparison.OrdinalIgnoreCase, out var titleToken);
                 return titleToken.ToObject<long?>();
             }
             set
             {
-                this[nameof(NoteDTO.Title)] = value;
+                this[nameof(this.Title)] = value;
             }
         }
     }

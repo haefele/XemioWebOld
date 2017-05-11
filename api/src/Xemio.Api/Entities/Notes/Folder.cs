@@ -6,7 +6,5 @@
 
         public string UserId { get; set; }
         public string Name { get; set; }
-
-        public string ParentFolderId { get; set; }
     }
 }

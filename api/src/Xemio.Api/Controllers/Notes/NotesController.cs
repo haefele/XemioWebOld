@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Raven.Client;
 using Xemio.Api.Data.Models.Notes;
 using Xemio.Api.Entities.Notes;
+using Xemio.Api.Extensions;
 using Xemio.Api.Mapping;
 
 namespace Xemio.Api.Controllers.Notes
@@ -51,16 +52,20 @@ namespace Xemio.Api.Controllers.Notes
         }
 
         [HttpGet(Name = RouteNames.GetNotesFromFolder)]
-        public async Task<IActionResult> GetNotesFromFolderAsync([Required][FromQuery]long? folderId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IActionResult> GetNotesFromFolderAsync([FromQuery]long? folderId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var folder = await this._documentSession.LoadAsync<Folder>(folderId, cancellationToken);
+            var stringFolderId = this._documentSession.ToStringId<Folder>(folderId);
 
-            if (folder == null || folder.UserId != this.User.Identity.Name)
+            var hierarchy = await this._documentSession.LoadOrCreateHierarchyAsync(this.User.Identity.Name, cancellationToken);
+
+            if (folderId != null && hierarchy.HasFolder(stringFolderId) == false)
                 return this.NotFound();
 
-            var notes = await this._documentSession.Query<Note>()
-                .Where(f => f.UserId == this.User.Identity.Name && f.FolderId == folder.Id)
-                .ToListAsync(cancellationToken);
+            var noteIds = folderId == null
+                ? hierarchy.GetRootNoteIds()
+                : hierarchy.GetNoteIds(stringFolderId);
+
+            var notes = await this._documentSession.LoadAsync<Note>(noteIds, cancellationToken);
 
             var noteDTOs = await this._noteToNoteDTOMapper.MapListAsync(notes, cancellationToken);
 
@@ -70,20 +75,30 @@ namespace Xemio.Api.Controllers.Notes
         [HttpPost(Name = RouteNames.CreateNote)]
         public async Task<IActionResult> CreateNoteAsync([FromBody][Required]CreateNote createNote, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var folder = await this._documentSession.LoadAsync<Folder>(createNote.FolderId, cancellationToken);
+            var hierarchy = await this._documentSession.LoadOrCreateHierarchyAsync(this.User.Identity.Name, cancellationToken);
 
-            if (folder == null || folder.UserId != this.User.Identity.Name)
-                return this.NotFound();
+            if (createNote.FolderId != null)
+            {
+                var stringFolderId = this._documentSession.ToStringId<Folder>(createNote.FolderId);
 
+                if (hierarchy.HasFolder(stringFolderId) == false)
+                    createNote.FolderId = null;
+            }
+            
             var note = new Note
             {
                 Title = createNote.Title,
                 Content = createNote.Content,
                 UserId = this.User.Identity.Name,
-                FolderId = folder.Id,
             };
 
             await this._documentSession.StoreAsync(note, cancellationToken);
+
+            hierarchy.AddNewNote(note, this._documentSession.ToStringId<Folder>(createNote.FolderId));
+
+            if (hierarchy.Validate() == false)
+                return this.BadRequest();
+
             await this._documentSession.SaveChangesAsync(cancellationToken);
 
             var noteDTO = await this._noteToNoteDTOMapper.MapAsync(note, cancellationToken);
@@ -94,14 +109,17 @@ namespace Xemio.Api.Controllers.Notes
         [HttpPatch("{noteId:long}", Name = RouteNames.UpdateNote)]
         public async Task<IActionResult> UpdateNoteAsync([Required] long? noteId, [FromBody][Required]UpdateNote data, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var note = await this._documentSession.LoadAsync<Note>(noteId, cancellationToken);
+            var hierarchy = await this._documentSession.LoadOrCreateHierarchyAsync(this.User.Identity.Name, cancellationToken);
 
-            if (note == null || note.UserId != this.User.Identity.Name)
+            if (hierarchy.HasNote(this._documentSession.ToStringId<Note>(noteId)) == false)
                 return this.NotFound();
 
+            var note = await this._documentSession.LoadAsync<Note>(noteId, cancellationToken);
+            
             if (data.HasTitle())
             {
                 note.Title = data.Title;
+                hierarchy.UpdateNoteTitle(note.Id, note.Title);
             }
 
             if (data.HasContent())
@@ -111,11 +129,11 @@ namespace Xemio.Api.Controllers.Notes
 
             if (data.HasFolderId())
             {
-                var folder = await this._documentSession.LoadAsync<Folder>(data.FolderId, cancellationToken);
-
-                if (folder != null && folder.UserId == this.User.Identity.Name)
-                    note.FolderId = folder.Id;
+                hierarchy.UpdateFolderId(note.Id, this._documentSession.ToStringId<Folder>(data.FolderId));
             }
+
+            if (hierarchy.Validate() == false)
+                return this.BadRequest();
 
             await this._documentSession.SaveChangesAsync(cancellationToken);
 

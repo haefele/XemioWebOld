@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,8 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Raven.Client;
 using Xemio.Api.Data.Models.Notes;
-using Xemio.Api.Database.Indexes;
 using Xemio.Api.Entities.Notes;
+using Xemio.Api.Extensions;
 using Xemio.Api.Mapping;
 
 namespace Xemio.Api.Controllers.Notes
@@ -42,10 +43,11 @@ namespace Xemio.Api.Controllers.Notes
         [HttpGet(Name = RouteNames.GetRootFolders)]
         public async Task<IActionResult> GetRootFoldersAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            var folders = await this._documentSession.Query<Folder, Folders_ForQuery>()
-                .Where(f => f.UserId == this.User.Identity.Name && f.ParentFolderId == null)
-                .ToListAsync(cancellationToken);
+            var hierarchy = await this._documentSession.LoadOrCreateHierarchyAsync(this.User.Identity.Name, cancellationToken);
 
+            var rootFolderIds = hierarchy.GetRootFolderIds();
+
+            var folders = await this._documentSession.LoadAsync<Folder>(rootFolderIds, cancellationToken);
             var folderDTOs = await this._folderToFolderDTOMapper.MapListAsync(folders, cancellationToken);
 
             return this.Ok(folderDTOs);
@@ -54,15 +56,16 @@ namespace Xemio.Api.Controllers.Notes
         [HttpGet("{folderId:long}/folders", Name = RouteNames.GetSubFolders)]
         public async Task<IActionResult> GetSubFoldersAsync([Required]long? folderId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var folder = await this._documentSession.LoadAsync<Folder>(folderId, cancellationToken);
+            var stringFolderId = this._documentSession.ToStringId<Folder>(folderId);
 
-            if (folder == null || folder.UserId != this.User.Identity.Name)
+            var hierarchy = await this._documentSession.LoadOrCreateHierarchyAsync(this.User.Identity.Name, cancellationToken);
+            
+            if (hierarchy.HasFolder(stringFolderId) == false)
                 return this.NotFound();
 
-            var folders = await this._documentSession.Query<Folder, Folders_ForQuery>()
-                .Where(f => f.UserId == this.User.Identity.Name && f.ParentFolderId == folder.Id)
-                .ToListAsync(cancellationToken);
-
+            var subFolderIds = hierarchy.GetSubFolderIds(stringFolderId);
+            
+            var folders = await this._documentSession.LoadAsync<Folder>(subFolderIds, cancellationToken);
             var folderDTOs = await this._folderToFolderDTOMapper.MapListAsync(folders, cancellationToken);
 
             return this.Ok(folderDTOs);
@@ -84,18 +87,29 @@ namespace Xemio.Api.Controllers.Notes
         [HttpPost(Name = RouteNames.CreateFolder)]
         public async Task<IActionResult> CreateFolderAsync([FromBody][Required]CreateFolder data, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var parentFolder = data.ParentFolderId != null
-                ? await this._documentSession.LoadAsync<Folder>(data.ParentFolderId.Value, cancellationToken)
-                : null;
+            var hierarchy = await this._documentSession.LoadOrCreateHierarchyAsync(this.User.Identity.Name, cancellationToken);
+            
+            if (data.ParentFolderId.HasValue)
+            {
+                string stringParentFolderId = this._documentSession.ToStringId<Folder>(data.ParentFolderId.Value);
+                
+                if (hierarchy.HasFolder(stringParentFolderId) == false)
+                    data.ParentFolderId = null;
+            }
 
             var folder = new Folder
             {
                 Name = data.Name,
-                ParentFolderId = parentFolder?.Id,
                 UserId = this.User.Identity.Name
             };
 
             await this._documentSession.StoreAsync(folder, cancellationToken);
+
+            hierarchy.AddNewFolder(folder, this._documentSession.ToStringId<Folder>(data.ParentFolderId));
+
+            if (hierarchy.Validate() == false)
+                return this.BadRequest();
+
             await this._documentSession.SaveChangesAsync(cancellationToken);
 
             var folderDTO = await this._folderToFolderDTOMapper.MapAsync(folder, cancellationToken);
@@ -106,30 +120,26 @@ namespace Xemio.Api.Controllers.Notes
         [HttpPatch("{folderId:long}", Name = RouteNames.UpdateFolder)]
         public async Task<IActionResult> UpdateFolderAsync([Required]long? folderId, [FromBody][Required]UpdateFolder data, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var folder = await this._documentSession.LoadAsync<Folder>(folderId, cancellationToken);
+            var hierarchy = await this._documentSession.LoadOrCreateHierarchyAsync(this.User.Identity.Name, cancellationToken);
 
-            if (folder == null || folder.UserId != this.User.Identity.Name)
+            if (hierarchy.HasFolder(this._documentSession.ToStringId<Folder>(folderId)) == false)
                 return this.NotFound();
+
+            var folder = await this._documentSession.LoadAsync<Folder>(folderId, cancellationToken);
 
             if (data.HasName())
             {
                 folder.Name = data.Name;
+                hierarchy.UpdateFolderName(folder.Id, folder.Name);
             }
 
             if (data.HasParentFolderId())
             {
-                if (data.ParentFolderId == null)
-                {
-                    folder.ParentFolderId = null;
-                }
-                else
-                {
-                    var parentFolder = await this._documentSession.LoadAsync<Folder>(data.ParentFolderId.Value, cancellationToken);
-
-                    if (parentFolder != null && parentFolder.UserId == this.User.Identity.Name)
-                        folder.ParentFolderId = parentFolder.Id;
-                }
+                hierarchy.UpdateParentFolderId(folder.Id, this._documentSession.ToStringId<Folder>(data.ParentFolderId));
             }
+
+            if (hierarchy.Validate() == false)
+                return this.BadRequest();
 
             await this._documentSession.SaveChangesAsync(cancellationToken);
 
@@ -141,12 +151,29 @@ namespace Xemio.Api.Controllers.Notes
         [HttpDelete("{folderId:long}", Name = RouteNames.DeleteFolder)]
         public async Task<IActionResult> DeleteFolderAsync([Required]long? folderId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            Folder folder = await this._documentSession.LoadAsync<Folder>(folderId, cancellationToken);
+            var stringFolderId = this._documentSession.ToStringId<Folder>(folderId);
 
-            if (folder == null || folder.UserId != this.User.Identity.Name)
+            var hierarchy = await this._documentSession.LoadOrCreateHierarchyAsync(this.User.Identity.Name, cancellationToken);
+
+            if (hierarchy.HasFolder(stringFolderId) == false)
                 return this.NotFound();
-            
-            this._documentSession.Delete(folder);
+
+            var folderToDelete = hierarchy.GetFolder(stringFolderId);
+
+            var allFolders = folderToDelete.SubFolders.Flatten(f => f.SubFolders).Concat(new[] {folderToDelete}).ToList();
+            var allNotes = allFolders.SelectMany(f => f.Notes).ToList();
+
+            foreach (var folder in allFolders)
+            {
+                this._documentSession.Delete(folder.FolderId);
+            }
+            foreach (var note in allNotes)
+            {
+                this._documentSession.Delete(note);
+            }
+
+            hierarchy.DeleteFolder(stringFolderId);
+
             await this._documentSession.SaveChangesAsync(cancellationToken);
 
             return this.Ok();

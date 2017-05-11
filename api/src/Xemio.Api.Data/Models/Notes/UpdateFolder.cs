@@ -7,35 +7,35 @@ namespace Xemio.Api.Data.Models.Notes
     {
         public bool HasName()
         {
-            return this.TryGetValue(nameof(FolderDTO.Name), StringComparison.OrdinalIgnoreCase, out var _);
+            return this.TryGetValue(nameof(this.Name), StringComparison.OrdinalIgnoreCase, out var _);
         }
         public string Name
         {
             get
             {
-                this.TryGetValue(nameof(FolderDTO.Name), StringComparison.OrdinalIgnoreCase, out var nameToken);
+                this.TryGetValue(nameof(this.Name), StringComparison.OrdinalIgnoreCase, out var nameToken);
                 return nameToken.ToObject<string>();
             }
             set
             {
-                this[nameof(FolderDTO.Name)] = value;
+                this[nameof(this.Name)] = value;
             }
         }
         
         public bool HasParentFolderId()
         {
-            return this.TryGetValue(nameof(FolderDTO.ParentFolderId), StringComparison.OrdinalIgnoreCase, out var _);
+            return this.TryGetValue(nameof(this.ParentFolderId), StringComparison.OrdinalIgnoreCase, out var _);
         }
         public long? ParentFolderId
         {
             get
             {
-                this.TryGetValue(nameof(FolderDTO.ParentFolderId), StringComparison.OrdinalIgnoreCase, out var parentFolderIdToken);
+                this.TryGetValue(nameof(this.ParentFolderId), StringComparison.OrdinalIgnoreCase, out var parentFolderIdToken);
                 return parentFolderIdToken.ToObject<long?>();
             }
             set
             {
-                this[nameof(FolderDTO.ParentFolderId)] = value;
+                this[nameof(this.ParentFolderId)] = value;
             }
         }
     }

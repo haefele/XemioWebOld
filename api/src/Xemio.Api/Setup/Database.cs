@@ -1,10 +1,15 @@
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Raven.Client;
+using Raven.Client.Connection.Async;
 using Raven.Client.Document;
 using Raven.Client.Indexes;
+using Raven.Client.Linq;
+using Xemio.Api.Entities.Notes;
 
 namespace Xemio.Api.Setup
 {
@@ -17,6 +22,8 @@ namespace Xemio.Api.Setup
 
             documentStore.Initialize();
 
+            CustomizeDocumentStore(documentStore);
+            
             self.AddSingleton<IDocumentStore>(documentStore);
             self.AddScoped(sp =>
             {
@@ -24,6 +31,12 @@ namespace Xemio.Api.Setup
                 session.Advanced.WaitForIndexesAfterSaveChanges();
                 return session;
             });
+        }
+
+        private static void CustomizeDocumentStore(DocumentStore documentStore)
+        {
+            documentStore.Conventions.RegisterAsyncIdConvention<FoldersNotesHierarchy>((databaseName, commands, entity) => 
+                Task.FromResult(FoldersNotesHierarchy.CreateId(entity.UserId)));
         }
 
         public static void MigrateDatabase(this IApplicationBuilder self)

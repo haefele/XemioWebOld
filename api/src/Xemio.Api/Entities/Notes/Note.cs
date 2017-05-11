@@ -1,4 +1,6 @@
-﻿namespace Xemio.Api.Entities.Notes
+﻿using System.Collections;
+
+namespace Xemio.Api.Entities.Notes
 {
     public class Note : IEntity
     {
@@ -8,7 +10,5 @@
 
         public string Title { get; set; }
         public string Content { get; set; }
-
-        public string FolderId { get; set; }
     }
 }

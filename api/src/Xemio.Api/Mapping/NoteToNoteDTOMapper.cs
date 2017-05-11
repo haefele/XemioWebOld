@@ -26,36 +26,29 @@ namespace Xemio.Api.Mapping
             if (input == null)
                 return null;
 
-            var folder = await this._documentSession.LoadAsync<Folder>(input.FolderId, cancellationToken);
-
-            return this.ToNoteDTO(input, folder);
+            var hierarchy = await this._documentSession.LoadOrCreateHierarchyAsync(input.UserId, cancellationToken);
+            return this.ToNoteDTO(input, hierarchy);
         }
 
-        public override async Task<IList<NoteDTO>> MapListAsync(IList<Note> input, CancellationToken cancellationToken = new CancellationToken())
-        {
-            var folderIds = input.Where(f => f != null).Select(f => f.FolderId).Distinct().ToList();
-
-            var folders = await this._documentSession.LoadAsync<Folder>(folderIds, cancellationToken);
-
-            return input
-                .Select(f => f == null
-                    ? null
-                    : this.ToNoteDTO(f, folders.First(d => d.Id == f.FolderId)))
-                .ToList();
-        }
-
-        private NoteDTO ToNoteDTO(Note note, Folder folder)
+        private NoteDTO ToNoteDTO(Note note, FoldersNotesHierarchy hierarchy)
         {
             if (note == null)
                 return null;
+
+            var folder = hierarchy.GetNoteFolder(note.Id);
 
             return new NoteDTO
             {
                 Id = this._documentSession.ToLongId(note.Id),
                 Title = note.Title,
                 Content = note.Content,
-                FolderId = this._documentSession.ToLongId(folder.Id),
-                FolderName = folder.Name,
+                Folder = folder == null
+                    ? null
+                    : new SimpleFolderDTO
+                    {
+                        Id = this._documentSession.ToLongId(folder.FolderId),
+                        Name = folder.FolderName
+                    }
             };
         }
     }
